@@ -38,6 +38,21 @@ async function getNews(city) {
 app.get("/", (req, res) => {
     const regions = [
         {
+            region: 'Jharkhand',
+            endpoint: '/news/jharkhand',
+            description: 'Retrieves news articles related to Uttar Pradesh.'
+        },
+        {
+            region: 'Delhi',
+            endpoint: '/news/delhi',
+            description: 'Retrieves news articles related to Uttar Pradesh.'
+        },
+        {
+            region: 'Bihar',
+            endpoint: '/news/bihar',
+            description: 'Retrieves news articles related to Uttar Pradesh.'
+        },
+        {
             region: 'Uttar Pradesh',
             endpoint: '/news/uttar-pradesh',
             description: 'Retrieves news articles related to Uttar Pradesh.'
