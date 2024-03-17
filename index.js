@@ -1,197 +1,97 @@
 const port = 8000;
-const cheerio = require('cheerio');
-const axios = require('axios');
-const express = require('express');
+const cheerio = require("cheerio");
+const axios = require("axios");
+const express = require("express");
 
 const app = express();
 
 const newspapers = [
-    {
-        name: 'AajTak',
-        address: 'https://www.aajtak.in/india'
-    },
+  {
+    name: "AajTak",
+    address: "https://www.aajtak.in/india", //will add more newspapers
+  },
 ];
 
 async function getNews(city) {
-    const articles = [];
-    await Promise.all(newspapers.map(async newspaper => {
+  const articles = [];
+  try {
+    await Promise.all(
+      newspapers.map(async (newspaper) => {
         const response = await axios.get(newspaper.address + city);
         const html = response.data;
         const $ = cheerio.load(html);
-        $('div.widget-listing-thumb a', html).each(function() {
-            const title = $(this).attr("title");
-            const url = $(this).attr("href");
-            articles.push({
-                title,
-                url,
-                // source: newspaper.name
-            });
+        $("div.widget-listing-thumb a", html).each(function () {
+          const title = $(this).attr("title");
+          const url = $(this).attr("href");
+          articles.push({
+            title,
+            url,
+          });
         });
-    }));
-    return articles;
+      })
+    );
+  } catch (error) {
+    console.error("Error fetching news:", error);
+  }
+  return articles;
 }
 
-// app.get("/", (req, res) => {
-//     res.json('Welcome to news API');
-// });
+function createRegionRoute(regionData) {
+  app.get(regionData.endpoint, async (req, res) => {
+    const articles = await getNews(regionData.endpoint);
+    res.json(articles);
+  });
+}
+
+const regions = [
+  {
+    region: "Jharkhand",
+    endpoint: "/jharkhand",
+    description: "Retrieves news articles related to Jharkhand.",
+  },
+  {
+    region: "Delhi",
+    endpoint: "/delhi",
+    description: "Retrieves news articles related to Delhi.",
+  },
+  {
+    region: "Haryana",
+    endpoint: "/haryana",
+    description: "Retrieves news articles related to Haryana.",
+  },
+  {
+    region: "UP",
+    endpoint: "/uttar-pradesh",
+    description: "Retrieves news articles related to UP.",
+  },
+  {
+    region: "Punjab",
+    endpoint: "/punjab",
+    description: "Retrieves news articles related to Punjab.",
+  },
+  {
+    region: "MP",
+    endpoint: "/madhya-pradesh",
+    description: "Retrieves news articles related to MP.",
+  },
+  {
+    region: "Maharashtra",
+    endpoint: "maharashtra",
+    description: "Retrieves news articles related to Maharashtra.",
+  },
+];
+
+regions.forEach(createRegionRoute);
 
 app.get("/", (req, res) => {
-    const regions = [
-        {
-            region: 'Jharkhand',
-            endpoint: '/news/jharkhand',
-            description: 'Retrieves news articles related to Uttar Pradesh.'
-        },
-        {
-            region: 'Delhi',
-            endpoint: '/news/delhi',
-            description: 'Retrieves news articles related to Uttar Pradesh.'
-        },
-        {
-            region: 'Bihar',
-            endpoint: '/news/bihar',
-            description: 'Retrieves news articles related to Uttar Pradesh.'
-        },
-        {
-            region: 'Uttar Pradesh',
-            endpoint: '/news/uttar-pradesh',
-            description: 'Retrieves news articles related to Uttar Pradesh.'
-        },
-        {
-            region: 'Rajasthan',
-            endpoint: '/news/rajasthan',
-            description: 'Retrieves news articles related to Rajasthan.'
-        },
-        {
-            region: 'Haryana',
-            endpoint: '/news/haryana',
-            description: 'Retrieves news articles related to Haryana.'
-        },
-        {
-            region: 'Maharashtra',
-            endpoint: '/news/maharashtra',
-            description: 'Retrieves news articles related to Maharashtra.'
-        },
-        {
-            region: 'Uttarakhand',
-            endpoint: '/news/uttarakhand',
-            description: 'Retrieves news articles related to Uttarakhand.'
-        },
-        {
-            region: 'Gujarat',
-            endpoint: '/news/gujarat',
-            description: 'Retrieves news articles related to Gujarat.'
-        },
-        {
-            region: 'Telangana',
-            endpoint: '/news/telangana',
-            description: 'Retrieves news articles related to Telangana.'
-        },
-        {
-            region: 'Madhya Pradesh',
-            endpoint: '/news/madhya-pradesh',
-            description: 'Retrieves news articles related to Madhya Pradesh.'
-        },
-        {
-            region: 'Punjab',
-            endpoint: '/news/punjab',
-            description: 'Retrieves news articles related to Punjab.'
-        },
-        {
-            region: 'Himachal Pradesh',
-            endpoint: '/news/himachal-pradesh',
-            description: 'Retrieves news articles related to Himachal Pradesh.'
-        },
-        {
-            region: 'Chhattisgarh',
-            endpoint: '/news/chhattisgarh',
-            description: 'Retrieves news articles related to Chhattisgarh.'
-        },
-        {
-            region: 'Jammu and Kashmir',
-            endpoint: '/news/jammu-kashmir',
-            description: 'Retrieves news articles related to Jammu and Kashmir.'
-        },
-    ];
-    res.json({ greeting: 'Welcome to the AajTak-Statewise-News-Scraper', regions });
+  res.json({
+    greeting: "Welcome to the AajTak-Statewise-News-Scraper(Live)",
+    instructions:
+      "Edit address and add /<State Name> to get news for a perticular state except bihar and rajasthan for now",
+    regions,
+  });
 });
 
-
-app.get("/news/jharkhand", async(req, res) => {
-    const articles = await getNews("/jharkhand");
-    res.json(articles);
-});
-
-app.get("/news/delhi", async(req, res) => {
-    const articles = await getNews("/delhi");
-    res.json(articles);
-});
-
-app.get("/news/bihar", async(req, res) => {
-    const articles = await getNews("/bihar");
-    res.json(articles);
-});
-
-app.get("/news/uttar-pradesh", async(req, res) => {
-    const articles = await getNews("/uttar-pradesh");
-    res.json(articles);
-});
-
-app.get("/news/rajasthan", async(req, res) => {
-    const articles = await getNews("/rajasthan");
-    res.json(articles);
-});
-
-app.get("/news/haryana", async(req, res) => {
-    const articles = await getNews("/haryana");
-    res.json(articles);
-});
-
-app.get("/news/maharashtra", async(req, res) => {
-    const articles = await getNews("/maharashtra");
-    res.json(articles);
-});
-
-app.get("/news/uttarakhand", async(req, res) => {
-    const articles = await getNews("/uttarakhand");
-    res.json(articles);
-});
-
-app.get("/news/gujarat", async(req, res) => {
-    const articles = await getNews("/gujarat");
-    res.json(articles);
-});
-
-app.get("/news/telangana", async(req, res) => {
-    const articles = await getNews("/telangana");
-    res.json(articles);
-});
-
-app.get("/news/madhya-pradesh", async(req, res) => {
-    const articles = await getNews("/madhya-pradesh");
-    res.json(articles);
-});
-
-app.get("/news/punjab", async(req, res) => {
-    const articles = await getNews("/punjab");
-    res.json(articles);
-});
-
-app.get("/news/himachal-pradesh", async(req, res) => {
-    const articles = await getNews("/himachal-pradesh");
-    res.json(articles);
-});
-
-app.get("/news/chhattisgarh", async(req, res) => {
-    const articles = await getNews("/chhattisgarh");
-    res.json(articles);
-});
-
-app.get("/news/jammu-kashmir", async(req, res) => {
-    const articles = await getNews("/jammu-kashmir");
-    res.json(articles);
-});
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(process.env.PORT || port, () => {
+  console.log(`Server is running on port ${port}`);
 });
